@@ -1,0 +1,85 @@
+import pandas as pd
+uncleaned_data = pd.read_csv(r'C:\Users\PC\Desktop\Python Assignment\Uncleaned_DS_jobs.csv')
+columns_to_drop = ['index', 'Competitors',] 
+uncleaned_data = uncleaned_data.drop(columns=columns_to_drop, errors='ignore')
+
+In the salary_estimate column, delete the text (Glassdoor est.)
+uncleaned_data['Salary_Estimate'] = uncleaned_data['Salary_Estimate'].str.replace('(Glassdoor est.)', '',regex = True)
+uncleaned_data['Salary_Estimate']
+uncleaned_data['Salary_Estimate'] = uncleaned_data['Salary_Estimate'].str.replace('[K,$,(Employer est.)]', '',regex = True)
+uncleaned_data['Salary_Estimate']
+uncleaned_data['Salary_Estimate'].str.split('-', n=2, expand=True)
+ uncleaned_data['min_salary'] = uncleaned_data['Salary_Estimate'].str.split('-').str[0].astype(int)
+ uncleaned_data['min_salary'] 
+
+Split the salary column into 3 parts, minimum, average, maximum salary
+uncleaned_data['max_salary'] = uncleaned_data['Salary_Estimate'].str.split('-').str[1].astype(int)
+uncleaned_data['max_salary'] 
+uncleaned_data
+
+uncleaned_data['average_salary']=uncleaned_data[['min_salary', 'max_salary']].mean(axis=1)
+uncleaned_data['average_salary']
+uncleaned_data
+
+In the company_name column, delete everything after the “\n”
+uncleaned_data['Company_Name'] = uncleaned_data['Company_Name'].str.split('\n').str[0]
+uncleaned_data
+uncleaned_data['Company_Name']
+
+Review the location column and look for inconsistencies: You might need to split the column into 3 parts (State, location, City)
+uncleaned_data['Location'].str.split(',')
+
+import numpy as np 
+uncleaned_data.replace(-1, 0, inplace=True)
+import numpy as np
+import datetime
+uncleaned_data[['job_state','same_state','company_age']] = uncleaned_data['Location'].str.split(', ', expand=True)
+uncleaned_data['same_state'] = np.where(uncleaned_data['Location'] ==uncleaned_data['Headquarters'], 1, 0)
+uncleaned_data['company_age'] = np.where(uncleaned_data['Founded'] == -1, np.nan, 
+                                       datetime.datetime.now().year - uncleaned_data['Founded']).astype(int)
+uncleaned_data
+
+In the industry column, replace -1 with n/a . Note this is only for the industry column. For other columns -1 will mean something else and hence can be dropped or filled in with other values
+uncleaned_data['Industry'] = unclea
+ned_data['Industry'].replace('-1', 'n/a')
+uncleaned_data['Industry'] 
+uncleaned_data
+
+uncleaned_data.replace('-1', 'Not known', inplace=True)
+uncleaned_data
+
+From the job description column, extract the most popular skillfound in the corresponding job description and 0 if the skill is not found in the corresponding job description.
+skills = ['Python', 'excel', 'handoop', 'spark', 'aws', 'tableau','Big Data']
+for skill in skills:
+    uncleaned_data[skill.lower()] = uncleaned_data['Job Description'].str.contains(skill, case=False, regex=True).astype(int)
+
+Additional Data Cleaning
+uncleaned_data['job_simp'] = uncleaned_data['Job Title'].apply(lambda x: 'Data Scientist' if 'data scientist' in str(x).lower() else pd.NA)
+uncleaned_data
+
+ef seniority(title):
+    if 'Senior' in title:
+        return 'senior'
+    elif 'Sr' in title:
+        return 'senior'
+    elif 'Jr' in title: 
+        return 'junior'
+        
+    else:
+        return'NA'
+    
+    uncleaned_data['Seniority']
+
+uncleaned_data['seniority'] = uncleaned_data['Job Title'].apply(seniority)
+uncleaned_data
+columns_to_drop = ['Founded',] 
+uncleaned_data = uncleaned_data.drop(columns=columns_to_drop, errors='ignore')
+uncleaned_data
+uncleaned_data = uncleaned_data.loc[~uncleaned_data['Location'].isin(['California','Texas', 'Utah', 'Remote', 'New Jersey'])]
+uncleaned_data
+
+
+Export/save file to a .csv using pandas
+uncleaned_data.to_csv('Question2.csv', index=False)
+
+
